@@ -131,6 +131,10 @@ client.on(Events.InteractionCreate, async interaction => {
     }
   });
 
+
+client.on('error', console.error);
+process.on('unhandledRejection', console.error);
+
 client.once(Events.ClientReady, async clientReady => {
     console.log(`Ready! logged in as ${clientReady.user.tag}`)
 
