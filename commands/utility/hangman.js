@@ -13,6 +13,14 @@ const getMikuImage = (wrongGuesses) => {
 
 async function displayHangman(interaction, gameState, page = 1) {
     const { word, guessedLetters, wrongGuesses, maxWrongGuesses, currentHint } = gameState;
+
+    if (!interaction.deferred && !interaction.replied) {
+      try {
+        await interaction.deferReply({ ephemeral: false });
+      } catch (err) {
+        console.error('Failed to defer reply:', err);
+      }
+    }
   
     const wordDisplay = word.split('').map(char => 
       char === ' ' ? '   ' : (guessedLetters.includes(char) ? char : '\\_')
@@ -74,11 +82,16 @@ async function displayHangman(interaction, gameState, page = 1) {
   
     rows.push(controlRow); // now 5 rows max
   
-    if (interaction.replied || interaction.deferred) {
-      await interaction.editReply({ embeds: [embed], components: rows });
-    } else {
-      await interaction.reply({ embeds: [embed], components: rows });
+    try {
+      if (interaction.replied || interaction.deferred) {
+        await interaction.editReply({ embeds: [embed], components: rows });
+      } else {
+        await interaction.reply({ embeds: [embed], components: rows });
+      }
+    } catch (err) {
+      console.error('Failed to respond to interaction:', err);
     }
+    
 }
   
   
