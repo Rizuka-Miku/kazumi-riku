@@ -4,7 +4,6 @@ FROM node:20
 # Create app directory
 WORKDIR /app
 
-EXPOSE 3000
 
 # Copy files
 COPY package*.json ./
