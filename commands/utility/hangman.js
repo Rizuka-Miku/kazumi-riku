@@ -12,87 +12,82 @@ const getMikuImage = (wrongGuesses) => {
 };
 
 async function displayHangman(interaction, gameState, page = 1) {
-    const { word, guessedLetters, wrongGuesses, maxWrongGuesses, currentHint } = gameState;
+  const { word, guessedLetters, wrongGuesses, maxWrongGuesses, currentHint } = gameState;
 
-    if (!interaction.deferred && !interaction.replied) {
-      try {
-        await interaction.deferReply({ ephemeral: false });
-      } catch (err) {
-        console.error('Failed to defer reply:', err);
-      }
-    }
-  
-    const wordDisplay = word.split('').map(char => 
-      char === ' ' ? '   ' : (guessedLetters.includes(char) ? char : '\\_')
-    ).join(' ');
-  
-    const embed = new EmbedBuilder()
-      .setTitle('💖 Teka Teki Wota 💖')
-      .setDescription(`**${wordDisplay}**`)
-      .setColor('#39C5BB')
-      .setImage(getMikuImage(wrongGuesses))
-      .addFields(
-        { name: 'Wrong Guesses', value: `${wrongGuesses}/${maxWrongGuesses}`, inline: true },
-        { name: 'Used Letters', value: guessedLetters.join(', ') || 'None', inline: true },
-        { name: 'Lives', value: '💖 '.repeat(maxWrongGuesses - wrongGuesses) || '💔' }
-      );
-  
-    if (currentHint) {
-      embed.addFields({ name: '💡 Hint', value: currentHint });
-    }
-  
-    const fullAlphabet = 'QWERTYUIOPASDFGHJKLZXCVBNM'.split('');
-    const half = Math.ceil(fullAlphabet.length / 2);
-    const currentLetters = page === 1 ? fullAlphabet.slice(0, half) : fullAlphabet.slice(half);
-  
-    const rows = [];
-    for (let i = 0; i < currentLetters.length; i += 5) {
-      const row = new ActionRowBuilder();
-      const chunk = currentLetters.slice(i, i + 5);
-      chunk.forEach(letter => {
-        row.addComponents(
-          new ButtonBuilder()
-            .setCustomId(`hangman_${letter}`)
-            .setLabel(letter)
-            .setStyle(guessedLetters.includes(letter) ? ButtonStyle.Secondary : ButtonStyle.Primary)
-            .setDisabled(guessedLetters.includes(letter))
-        );
-      });
-      rows.push(row);
-    }
-  
-    // Controls (5th row)
-    const controlRow = new ActionRowBuilder().addComponents(
-      new ButtonBuilder()
-        .setCustomId('hangman_hint')
-        .setLabel('Show Hint')
-        .setStyle(ButtonStyle.Secondary)
-        .setDisabled(!!currentHint || gameState.hintList.length === 0),
-  
-      new ButtonBuilder()
-        .setCustomId('hangman_reset')
-        .setLabel('New Game')
-        .setStyle(ButtonStyle.Danger),
-  
-      new ButtonBuilder()
-        .setCustomId(page === 1 ? 'hangman_page2' : 'hangman_page1')
-        .setLabel(page === 1 ? 'Next Letters' : 'Previous Letters')
-        .setStyle(ButtonStyle.Primary)
-    );
-  
-    rows.push(controlRow); // now 5 rows max
-  
+  if (!interaction.deferred && !interaction.replied) {
     try {
-      if (interaction.replied || interaction.deferred) {
-        await interaction.editReply({ embeds: [embed], components: rows });
-      } else {
-        await interaction.reply({ embeds: [embed], components: rows });
-      }
+      await interaction.deferReply({ ephemeral: false });
     } catch (err) {
-      console.error('Failed to respond to interaction:', err);
+      console.error('Failed to defer reply:', err);
     }
-    
+  }
+
+  const wordDisplay = word.split('').map(char => 
+    char === ' ' ? '   ' : (guessedLetters.includes(char) ? char : '\\_')
+  ).join(' ');
+
+  const embed = new EmbedBuilder()
+    .setTitle('💖 Teka Teki Wota 💖')
+    .setDescription(`**${wordDisplay}**`)
+    .setColor('#39C5BB')
+    .setImage(getMikuImage(wrongGuesses))
+    .addFields(
+      { name: 'Wrong Guesses', value: `${wrongGuesses}/${maxWrongGuesses}`, inline: true },
+      { name: 'Used Letters', value: guessedLetters.join(', ') || 'None', inline: true },
+      { name: 'Lives', value: '💖 '.repeat(maxWrongGuesses - wrongGuesses) || '💔' }
+    );
+
+  if (currentHint) {
+    embed.addFields({ name: '💡 Hint', value: currentHint });
+  }
+
+  const fullAlphabet = 'QWERTYUIOPASDFGHJKLZXCVBNM'.split('');
+  const half = Math.ceil(fullAlphabet.length / 2);
+  const currentLetters = page === 1 ? fullAlphabet.slice(0, half) : fullAlphabet.slice(half);
+
+  const rows = [];
+  for (let i = 0; i < currentLetters.length; i += 5) {
+    const row = new ActionRowBuilder();
+    const chunk = currentLetters.slice(i, i + 5);
+    chunk.forEach(letter => {
+      row.addComponents(
+        new ButtonBuilder()
+          .setCustomId(`hangman_${letter}`)
+          .setLabel(letter)
+          .setStyle(guessedLetters.includes(letter) ? ButtonStyle.Secondary : ButtonStyle.Primary)
+          .setDisabled(guessedLetters.includes(letter))
+      );
+    });
+    rows.push(row);
+  }
+
+  const controlRow = new ActionRowBuilder().addComponents(
+    new ButtonBuilder()
+      .setCustomId('hangman_hint')
+      .setLabel('Show Hint')
+      .setStyle(ButtonStyle.Secondary)
+      .setDisabled(!!currentHint || gameState.hintList.length === 0),
+
+    new ButtonBuilder()
+      .setCustomId('hangman_reset')
+      .setLabel('New Game')
+      .setStyle(ButtonStyle.Danger),
+
+    new ButtonBuilder()
+      .setCustomId(page === 1 ? 'hangman_page2' : 'hangman_page1')
+      .setLabel(page === 1 ? 'Next Letters' : 'Previous Letters')
+      .setStyle(ButtonStyle.Primary)
+  );
+
+  rows.push(controlRow);
+
+  try {
+    await interaction.editReply({ embeds: [embed], components: rows });
+  } catch (err) {
+    console.error('Failed to respond to interaction:', err);
+  }
 }
+
   
   
 
