@@ -65,7 +65,7 @@ client.on(Events.InteractionCreate, async interaction => {
         if (!gameState) {
           return interaction.reply({
             content: 'No active game! Start a new one with `/teka-teki-wota`',
-            ephemeral: true
+            flags: MessageFlags.Ephemeral
           });
         }
   
@@ -86,7 +86,7 @@ client.on(Events.InteractionCreate, async interaction => {
         // Letter guess
         const letter = action.toUpperCase();
         if (gameState.guessedLetters.includes(letter)) {
-          return interaction.reply({ content: 'You already guessed that letter!', ephemeral: true });
+          return interaction.reply({ content: 'You already guessed that letter!', flags: MessageFlags.Ephemeral });
         }
   
         gameState.guessedLetters.push(letter);
@@ -120,7 +120,7 @@ client.on(Events.InteractionCreate, async interaction => {
       console.error('Error handling interaction:', error);
       const errorReply = {
         content: 'There was an error processing this interaction!',
-        ephemeral: true
+        flags: MessageFlags.Ephemeral
       };
   
       if (interaction.replied || interaction.deferred) {
