@@ -79,7 +79,7 @@ client.on(Events.InteractionCreate, async interaction => {
   
         // Reset
         if (action === 'reset') {
-          hangmanCommand.activeGames.delete(interaction.channelId);
+          hangmanCommand.activeGames.delete(`${interaction.channelId}_${interaction.user.id}`);
           return hangmanCommand.execute(interaction);
         }
   
@@ -110,7 +110,7 @@ client.on(Events.InteractionCreate, async interaction => {
             .setImage(hangmanCommand.getMikuImage(isWinner ? 0 : gameState.maxWrongGuesses));
   
           await interaction.update({ embeds: [resultEmbed], components: [] });
-          return hangmanCommand.activeGames.delete(interaction.channelId);
+          return hangmanCommand.activeGames.delete(`${interaction.channelId}_${interaction.user.id}`);
         }
   
         hangmanCommand.activeGames.set(`${interaction.channelId}_${interaction.user.id}`, gameState);
