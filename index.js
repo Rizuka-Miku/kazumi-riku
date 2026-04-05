@@ -28,6 +28,7 @@ for (const folder of commandFolder) {
 
 		if ('data' in command && 'execute' in command) {
 			client.commands.set(command.data.name, command);
+			console.log(`Loaded command: ${command.data.name} from ${filePath}`);
 		}
 		else {
 			console.log(`[WARNING] The command at ${filePath} is missing a required "data" or "execute" property`);
@@ -148,6 +149,7 @@ client.once(Events.ClientReady, async clientReady => {
 
 		await client.application.commands.set(commands);
 		console.log('Successfully registered application commands.');
+		console.log('Registered commands:', commands.map(c => c.name).join(', '));
 	}
 	catch (error) {
 		console.error('Error registering commands:', error);
