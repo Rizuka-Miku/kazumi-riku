@@ -51,6 +51,22 @@ client.on(Events.InteractionCreate, async interaction => {
 			const gameState = hangmanCommand.activeGames.get(`${interaction.channelId}_${interaction.user.id}`);
 			const action = interaction.customId.split('_')[1];
 
+			// Check if user is clicking their own game message
+			if (gameState && gameState.messageId && gameState.messageId !== interaction.message.id && action !== 'reset') {
+				return interaction.reply({
+					content: 'This is not your game! Start your own with `/teka-teki-wota`',
+					flags: MessageFlags.Ephemeral,
+				});
+			}
+
+			// Check if user is the game owner (except for reset which anyone can use to start their own game)
+			if (gameState && gameState.ownerId !== interaction.user.id && action !== 'reset') {
+				return interaction.reply({
+					content: 'This is not your game! Start your own with `/teka-teki-wota`',
+					flags: MessageFlags.Ephemeral,
+				});
+			}
+
 			// Page switching (doesn't require active game state)
 			if (action === 'page1' || action === 'page2') {
 				if (!gameState) {
@@ -60,11 +76,13 @@ client.on(Events.InteractionCreate, async interaction => {
 					});
 				}
 				const page = action === 'page1' ? 1 : 2;
+				gameState.currentPage = page;
+				hangmanCommand.activeGames.set(`${interaction.channelId}_${interaction.user.id}`, gameState);
 				return hangmanCommand.displayHangman(interaction, gameState, page);
 			}
 
-			// Game must exist for everything else
-			if (!gameState) {
+			// Game must exist for everything else (except reset)
+			if (!gameState && action !== 'reset') {
 				return interaction.reply({
 					content: 'No active game! Start a new one with `/teka-teki-wota`',
 					flags: MessageFlags.Ephemeral,
@@ -73,8 +91,13 @@ client.on(Events.InteractionCreate, async interaction => {
 
 			// Hint
 			if (action === 'hint') {
-				if (!gameState.currentHint && gameState.hintList.length > 0) {
-					gameState.currentHint = gameState.hintList[Math.floor(Math.random() * gameState.hintList.length)];
+				if (gameState.shownHints.length < gameState.hintList.length) {
+					// Get hints that haven't been shown yet
+					const remainingHints = gameState.hintList.filter(hint => !gameState.shownHints.includes(hint));
+					if (remainingHints.length > 0) {
+						const newHint = remainingHints[Math.floor(Math.random() * remainingHints.length)];
+						gameState.shownHints.push(newHint);
+					}
 				}
 				return hangmanCommand.displayHangman(interaction, gameState);
 			}
