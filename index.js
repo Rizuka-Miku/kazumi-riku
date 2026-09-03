@@ -3,6 +3,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const dotenv = require('dotenv');
 const hangmanCommand = require('./commands/utility/hangman');
+const tanyaMikuCommand = require('./commands/utility/tanyaMiku');
 
 dotenv.config();
 
@@ -11,6 +12,8 @@ const token = process.env.DISCORD_BOT_TOKEN;
 const client = new Client({
 	intents: [
 		GatewayIntentBits.Guilds,
+		GatewayIntentBits.GuildMessages,
+		GatewayIntentBits.MessageContent,
 	],
 });
 
@@ -44,6 +47,11 @@ client.on(Events.InteractionCreate, async interaction => {
 			if (!command) return;
 			await command.execute(interaction);
 			return;
+		}
+
+		// Miku room close button
+		if (interaction.isButton() && interaction.customId === 'mikuroom_close') {
+			return tanyaMikuCommand.closeRoom(interaction);
 		}
 
 		// Hangman buttons
@@ -158,6 +166,10 @@ client.on(Events.InteractionCreate, async interaction => {
 	}
 });
 
+
+client.on(Events.MessageCreate, message => tanyaMikuCommand.handleRoomMessage(message));
+
+client.on(Events.ThreadDelete, thread => tanyaMikuCommand.rooms.delete(thread.id));
 
 client.on('error', console.error);
 process.on('unhandledRejection', console.error);
