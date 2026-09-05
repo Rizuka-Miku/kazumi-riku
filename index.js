@@ -161,7 +161,12 @@ client.on(Events.InteractionCreate, async interaction => {
 			await interaction.followUp(errorReply);
 		}
 		else {
-			await interaction.reply(errorReply);
+			try {
+				await interaction.reply(errorReply);
+			}
+			catch {
+				// Interaction token expired — nothing we can do
+			}
 		}
 	}
 });
